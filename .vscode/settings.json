@@ -8,6 +8,8 @@
         ".project": true,
         ".settings": true,
         "targetConfigs": true,
+        "msp432p401r.cmd": true,
+        "system_msp432p401r.c": true,
     },
     "files.enableTrash": false,
 }
