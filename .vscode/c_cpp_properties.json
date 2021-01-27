@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": [
+        "${workspaceFolder}/",
+        "/home/civts/ti/simplelink_msp432p4_sdk_3_40_01_02/source/",
+        "/home/civts/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/",
+        "/home/civts/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/"
+      ],
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu17",
+      "cppStandard": "gnu++14"
+    }
+  ],
+  "version": 4
+}

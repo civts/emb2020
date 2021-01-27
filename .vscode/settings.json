@@ -1,0 +1,13 @@
+{
+    "files.exclude": {
+        ".launches": true,
+        "Debug": true,
+        "ccs": true,
+        ".ccsproject": true,
+        ".cproject": true,
+        ".project": true,
+        ".settings": true,
+        "targetConfigs": true,
+    },
+    "files.enableTrash": false,
+}
