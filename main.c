@@ -16,12 +16,12 @@ int main(void)
 
   while (1)
   {
-    game_info.selectedLevel = 0;
+    game_info.selectedGame = 0;
     game_info.useDarkMode = false;
 
-    //Let player choose level and color theme
+    //Let player choose game and color theme
     showMenu(&gContext, &game_info);
-    //Let player play the level
+    //Let player play the game
     //showGameScreen();
 
     //Display message "restart by pressing S1"

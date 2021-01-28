@@ -5,8 +5,8 @@
 */
 typedef struct
 {
-    //The level the player is going to play
-    int selectedLevel;
+    //The game the player is going to play
+    int selectedGame;
     //Wether to use dark colors or not
     bool useDarkMode;
 } gameInfo_t;
