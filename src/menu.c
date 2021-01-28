@@ -1,4 +1,5 @@
 #include "menu.h"
+#include "gameInfo.h"
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
 
 //Vertical offset for the options
@@ -7,20 +8,25 @@ const int optionsOffset = 50;
 const int8_t **const options[] = {"Game 1", "Game 2"};
 const int optionsLength = 2;
 
-void showMenu(Graphics_Context *context, gameInfo_t *game_info)
+void showMenu()
 {
+    Graphics_Context *context = &gameInfo.gContext;
     int currentlySelected = 0;
     int stepBetweenOptions = context->font->height * 2;
 
-    _drawTitle(context);
+    while (1)
+    {
+        _drawTitle();
 
-    _drawSelectionRectangle(context, currentlySelected, stepBetweenOptions);
+        _drawSelectionRectangle(currentlySelected, stepBetweenOptions);
 
-    _drawOptions(context, stepBetweenOptions);
+        _drawOptions(stepBetweenOptions);
+    }
 }
 
-void _drawTitle(Graphics_Context *ctx)
+void _drawTitle()
 {
+    Graphics_Context *ctx = &gameInfo.gContext;
     uint32_t previousColor = ctx->foreground;
     Graphics_setForegroundColor(ctx, GRAPHICS_COLOR_GREEN);
     int font_height = ctx->font->height;
@@ -35,8 +41,9 @@ void _drawTitle(Graphics_Context *ctx)
     Graphics_setForegroundColor(ctx, previousColor);
 }
 
-void _drawOptions(Graphics_Context *ctx, int step)
+void _drawOptions(int step)
 {
+    Graphics_Context *ctx = &gameInfo.gContext;
     uint32_t previousColor = ctx->foreground;
     Graphics_setForegroundColor(ctx, GRAPHICS_COLOR_BLACK);
     int halfWidth = ctx->display->width / 2;
@@ -56,8 +63,9 @@ void _drawOptions(Graphics_Context *ctx, int step)
     Graphics_setForegroundColor(ctx, previousColor);
 }
 
-void _drawSelectionRectangle(Graphics_Context *context, const int selected, const int step)
+void _drawSelectionRectangle(const int selected, const int step)
 {
+    Graphics_Context *context = &gameInfo.gContext;
     const int pad = 20;
     Graphics_Rectangle rectangle;
     rectangle.xMin = pad;

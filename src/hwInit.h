@@ -4,5 +4,7 @@
 
 //Performs the hardware initialization
 //Also initializes the graphics context
-void hwInit(Graphics_Context *gContext);
+void hwInit();
+
+void _graphicsInit();
 #endif
