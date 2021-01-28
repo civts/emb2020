@@ -1,5 +1,3 @@
-#include "gameInfo.h"
-#include "ti/grlib/grlib.h"
 #ifndef __MENU__
 #define __MENU__
 //Show menu where player can select the game to play and

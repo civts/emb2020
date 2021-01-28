@@ -16,10 +16,12 @@ typedef struct
     int selectedGame;
     //Wether to use dark colors or not
     bool useDarkMode;
+    //The screen the user is viewing
     enum screen screenIAmIn;
+    //This allows access to the display graphical context
     Graphics_Context gContext;
-} gameInfo_t;
+} GameState_t;
 
-gameInfo_t gameInfo;
+GameState_t gameState;
 
 #endif

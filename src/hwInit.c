@@ -2,7 +2,8 @@
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <ti/devices/msp432p4xx/inc/msp.h>
 #include <ti/grlib/grlib.h>
-#include "gameInfo.h"
+#include "gameState.h"
+#include "hwInit.h"
 
 void hwInit()
 {
@@ -38,7 +39,7 @@ void _graphicsInit()
     Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
 
     // Initializes graphics context
-    Graphics_Context *gContext = &gameInfo.gContext;
+    Graphics_Context *gContext = &gameState.gContext;
     Graphics_initContext(gContext, &g_sCrystalfontz128x128,
                          &g_sCrystalfontz128x128_funcs);
 

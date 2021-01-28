@@ -1,4 +1,3 @@
-#include "ti/grlib/context.c"
 #ifndef __HW_INIT__
 #define __HW_INIT__
 
