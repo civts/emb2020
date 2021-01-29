@@ -1,5 +1,7 @@
 #include "gameState.h"
 #include <ti/devices/msp432p4xx/inc/msp.h>
+#include <stdio.h>
+#include "menu.h"
 
 //Vertical offset for the options
 const int optionsOffset = 50;
@@ -14,8 +16,9 @@ void showMenu()
     int stepBetweenOptions = context->font->height * 2;
 
     gameState.screenIAmIn = Settings;
-    while ((!gameState.topButtonClicked) && currentlySelected >= optionsLength)
+    while ((!gameState.topButtonClicked) || currentlySelected >= optionsLength)
     {
+        ADC14->CTL0 |= ADC14_CTL0_SC;
         _drawTitle();
 
         _drawSelectionRectangle(currentlySelected, stepBetweenOptions);
@@ -30,9 +33,15 @@ void showMenu()
             }
             gameState.topButtonClicked = false;
         }
-
+        char string[10];
+        sprintf(string, "X: %5d", gameState.joystickX);
+        Graphics_drawStringCentered(&gameState.gContext,
+                                    (int8_t *)string,
+                                    8,
+                                    64,
+                                    100,
+                                    OPAQUE_TEXT);
         //Wait for user input
-        __sleep();
     }
     gameState.selectedGame = currentlySelected;
     gameState.screenIAmIn = Changing;

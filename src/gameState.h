@@ -22,6 +22,9 @@ typedef struct
     Graphics_Context gContext;
 
     bool topButtonClicked;
+
+    uint16_t joystickX;
+    uint16_t joystickY;
 } GameState_t;
 
 GameState_t gameState;

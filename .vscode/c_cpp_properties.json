@@ -3,7 +3,7 @@
     {
       "name": "Linux",
       "includePath": [
-        "~/ti/simplelink_msp432p4_sdk_3_40_01_02/source/"
+        "~/ti/simplelink_msp432p4_sdk_3_40_01_02/source/**"
       ],
       "cStandard": "gnu17"
     }

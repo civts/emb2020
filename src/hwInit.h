@@ -8,4 +8,6 @@ void hwInit();
 void _graphicsInit();
 
 void _initButton();
+
+void configureADC();
 #endif
