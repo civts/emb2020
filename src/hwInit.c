@@ -74,8 +74,7 @@ void PORT5_IRQHandler(void)
             ;
         if (!(P5->IN & BIT1))
         {
-            //TODO: set to true
-            gameState.topButtonClicked = !gameState.topButtonClicked;
+            gameState.topButtonClicked = true;
         }
         P5->IFG &= ~BIT1;
     }

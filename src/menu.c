@@ -1,4 +1,5 @@
 #include "gameState.h"
+#include <ti/devices/msp432p4xx/inc/msp.h>
 
 //Vertical offset for the options
 const int optionsOffset = 50;
@@ -12,14 +13,29 @@ void showMenu()
     int currentlySelected = 0;
     int stepBetweenOptions = context->font->height * 2;
 
-    while (1)
+    gameState.screenIAmIn = Settings;
+    while ((!gameState.topButtonClicked) && currentlySelected >= optionsLength)
     {
         _drawTitle();
 
         _drawSelectionRectangle(currentlySelected, stepBetweenOptions);
 
         _drawOptions(stepBetweenOptions);
+
+        if (gameState.topButtonClicked)
+        {
+            if (currentlySelected == optionsLength)
+            {
+                //TODO: Toggle light/dark
+            }
+            gameState.topButtonClicked = false;
+        }
+
+        //Wait for user input
+        __sleep();
     }
+    gameState.selectedGame = currentlySelected;
+    gameState.screenIAmIn = Changing;
 }
 
 void _drawTitle()
@@ -70,13 +86,5 @@ void _drawSelectionRectangle(const int selected, const int step)
     rectangle.xMax = context->display->width - pad;
     rectangle.yMin = optionsOffset + selected * step - step / 2;
     rectangle.yMax = optionsOffset + selected * step + step / 2;
-    if (gameState.topButtonClicked)
-    {
-        Graphics_setForegroundColor(context, GRAPHICS_COLOR_ORANGE_RED);
-    }
     Graphics_drawRectangle(context, &rectangle);
-    if (gameState.topButtonClicked)
-    {
-        Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
-    }
 }

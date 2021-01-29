@@ -4,7 +4,7 @@
 
 int main(void)
 {
-  gameState.screenIAmIn = Settings;
+  gameState.screenIAmIn = Changing;
   gameState.useDarkMode = false;
   gameState.topButtonClicked = false;
 
