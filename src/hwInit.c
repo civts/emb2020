@@ -133,6 +133,7 @@ void ADC14_IRQHandler(void)
 //Interrupt handler for the top button on the boosterpack
 void PORT5_IRQHandler(void)
 {
+    __disable_irq();
     if (P5->IFG & BIT1)
     {
         uint32_t i;
@@ -144,4 +145,5 @@ void PORT5_IRQHandler(void)
         }
         P5->IFG &= ~BIT1;
     }
+    __enable_irq();
 }
