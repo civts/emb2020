@@ -14,4 +14,8 @@ void _drawOptions(int step);
 //The selection rectangle indicates the area the user is interacting with
 void _drawSelectionRectangle(const int selected, const int step);
 
+//Deletes the selection rectangle by drawing over it another
+//one of with the same color as the background
+void _cleanSelectionRectangle(const int selected, const int step);
+
 #endif

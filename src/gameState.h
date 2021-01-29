@@ -1,7 +1,13 @@
 #include <stdbool.h>
 #include "ti/grlib/grlib.h"
-#ifndef __GAME_INFO__
-#define __GAME_INFO__
+#ifndef __GAME_INFO_H__
+#define __GAME_INFO_H__
+
+#define J_UP_TRESH 10000
+#define J_DOWN_TRESH 7000
+#define J_RIGHT_TRESH 10000
+#define J_LEFT_TRESH 6000
+
 enum screen
 {
     Settings,

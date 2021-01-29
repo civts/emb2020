@@ -1,6 +1,5 @@
 #include "gameState.h"
 #include <ti/devices/msp432p4xx/inc/msp.h>
-#include <stdio.h>
 #include "menu.h"
 
 //Vertical offset for the options
@@ -16,10 +15,29 @@ void showMenu()
     int stepBetweenOptions = context->font->height * 2;
 
     gameState.screenIAmIn = Settings;
+    int previouslySelected = currentlySelected;
+    gameState.topButtonClicked = false;
     while ((!gameState.topButtonClicked) || currentlySelected >= optionsLength)
     {
+        //Trigger ADC to read joystick position
         ADC14->CTL0 |= ADC14_CTL0_SC;
+
+        if (gameState.joystickY < J_DOWN_TRESH)
+        {
+            currentlySelected = min(currentlySelected + 1, optionsLength - 1);
+        }
+        else if (gameState.joystickY > J_UP_TRESH)
+        {
+            currentlySelected = max(currentlySelected - 1, 0);
+        }
+
         _drawTitle();
+
+        if (previouslySelected != currentlySelected)
+        {
+            _cleanSelectionRectangle(previouslySelected, stepBetweenOptions);
+            previouslySelected = currentlySelected;
+        }
 
         _drawSelectionRectangle(currentlySelected, stepBetweenOptions);
 
@@ -30,19 +48,11 @@ void showMenu()
             if (currentlySelected == optionsLength)
             {
                 //TODO: Toggle light/dark
+                gameState.topButtonClicked = false;
             }
-            gameState.topButtonClicked = false;
         }
-        char string[10];
-        sprintf(string, "X: %5d", gameState.joystickX);
-        Graphics_drawStringCentered(&gameState.gContext,
-                                    (int8_t *)string,
-                                    8,
-                                    64,
-                                    100,
-                                    OPAQUE_TEXT);
-        //Wait for user input
     }
+    gameState.topButtonClicked = false;
     gameState.selectedGame = currentlySelected;
     gameState.screenIAmIn = Changing;
 }
@@ -96,4 +106,19 @@ void _drawSelectionRectangle(const int selected, const int step)
     rectangle.yMin = optionsOffset + selected * step - step / 2;
     rectangle.yMax = optionsOffset + selected * step + step / 2;
     Graphics_drawRectangle(context, &rectangle);
+}
+
+void _cleanSelectionRectangle(const int selected, const int step)
+{
+    int fgColor = gameState.gContext.foreground;
+    gameState.gContext.foreground = gameState.gContext.background;
+    Graphics_Context *context = &gameState.gContext;
+    const int pad = 20;
+    Graphics_Rectangle rectangle;
+    rectangle.xMin = pad;
+    rectangle.xMax = context->display->width - pad;
+    rectangle.yMin = optionsOffset + selected * step - step / 2;
+    rectangle.yMax = optionsOffset + selected * step + step / 2;
+    Graphics_drawRectangle(context, &rectangle);
+    gameState.gContext.foreground = fgColor;
 }
