@@ -6,4 +6,6 @@
 void hwInit();
 
 void _graphicsInit();
+
+void _initButton();
 #endif

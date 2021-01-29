@@ -20,6 +20,8 @@ typedef struct
     enum screen screenIAmIn;
     //This allows access to the display graphical context
     Graphics_Context gContext;
+
+    bool topButtonClicked;
 } GameState_t;
 
 GameState_t gameState;

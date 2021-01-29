@@ -70,5 +70,13 @@ void _drawSelectionRectangle(const int selected, const int step)
     rectangle.xMax = context->display->width - pad;
     rectangle.yMin = optionsOffset + selected * step - step / 2;
     rectangle.yMax = optionsOffset + selected * step + step / 2;
+    if (gameState.topButtonClicked)
+    {
+        Graphics_setForegroundColor(context, GRAPHICS_COLOR_ORANGE_RED);
+    }
     Graphics_drawRectangle(context, &rectangle);
+    if (gameState.topButtonClicked)
+    {
+        Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
+    }
 }

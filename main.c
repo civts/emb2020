@@ -6,6 +6,7 @@ int main(void)
 {
   gameState.screenIAmIn = Settings;
   gameState.useDarkMode = false;
+  gameState.topButtonClicked = false;
 
   //Init hardware and graphics
   hwInit();
