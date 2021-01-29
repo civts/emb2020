@@ -1,5 +1,5 @@
 #include "gameState.h"
-#include <ti/devices/msp432p4xx/inc/msp.h>
+#include "ti/devices/msp432p4xx/inc/msp432p401r.h"
 #include "menu.h"
 
 //Vertical offset for the options

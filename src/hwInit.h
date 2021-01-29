@@ -9,5 +9,5 @@ void _graphicsInit();
 
 void _initButton();
 
-void configureADC();
+void configure_ADC();
 #endif

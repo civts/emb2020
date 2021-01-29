@@ -65,7 +65,7 @@ void _initButton(void)
     NVIC_EnableIRQ(PORT5_IRQn);
 }
 
-void configure_ADC(void)
+void configure_ADC()
 {
     /*enable ports*/
 
