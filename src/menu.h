@@ -1,5 +1,5 @@
-#ifndef __MENU__
-#define __MENU__
+#ifndef __MENU_H__
+#define __MENU_H__
 //Show menu where player can select the game to play and
 //desired color theme (light, dark or automatic)
 void showMenu();

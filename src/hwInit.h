@@ -1,5 +1,5 @@
-#ifndef __HW_INIT__
-#define __HW_INIT__
+#ifndef __HW_INIT_H__
+#define __HW_INIT_H__
 
 //Performs the hardware initialization
 //Also initializes the graphics context
