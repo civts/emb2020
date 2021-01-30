@@ -5,12 +5,13 @@
 //Vertical offset for the options
 const int optionsOffset = 50;
 
-const char*const options[] = {"Game 1", "Game 2"};
+const char *const options[] = {"Game 1", "Game 2"};
 const int optionsLength = 2;
 
 void showMenu()
 {
     Graphics_Context *context = &gameState.gContext;
+    Graphics_clearDisplay(context);
     int currentlySelected = 0;
     int stepBetweenOptions = context->font->height * 2;
 
@@ -86,7 +87,7 @@ void _drawOptions(int step)
     {
         Graphics_drawStringCentered(
             ctx,
-            (int8_t *) options[i],
+            (int8_t *)options[i],
             AUTO_STRING_LENGTH,
             halfWidth,
             yOffset,

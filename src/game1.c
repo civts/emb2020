@@ -1,5 +1,6 @@
 #include "game1.h"
 #include "gameState.h"
+#include <stdlib.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
 
@@ -8,7 +9,8 @@
 bool game1()
 {
     GrClearDisplay(&gameState.gContext);
-    bool playing = true;
+    bool alive = true;
+    bool won = false;
     gameState.topButtonClicked = false;
 
     int playerX = LCD_HORIZONTAL_MAX / 2;
@@ -17,7 +19,20 @@ bool game1()
     int i = 0;
     Graphics_Context *ctxPtr = &gameState.gContext;
     bool justResumed = true;
-    while (playing)
+
+    int enemyX[ENEMIES_COUNT];
+    int enemyY[ENEMIES_COUNT];
+    bool goingLeft[ENEMIES_COUNT];
+
+    for (i = 0; i < ENEMIES_COUNT; i++)
+    {
+        const pad = 20;
+        enemyX[i] = rand() % LCD_HORIZONTAL_MAX;
+        enemyY[i] = rand() % (LCD_VERTICAL_MAX - 2 * pad) + pad;
+        goingLeft[i] = rand() % 2;
+    }
+    i = 0;
+    while (alive && !won)
     {
         if (gameState.topButtonClicked)
         {
@@ -51,58 +66,127 @@ bool game1()
         else
         {
             ADC14->CTL0 |= ADC14_CTL0_SC;
-            Graphics_Rectangle prevPlayerRect;
-            prevPlayerRect.xMin = playerX - 1;
-            prevPlayerRect.xMax = playerX + 1;
-            prevPlayerRect.yMin = playerY - 1;
-            prevPlayerRect.yMax = playerY + 1;
-            //Move
-            if (gameState.joystickX < J_LEFT_TRESH)
+            uint32_t previousFg = ctxPtr->foreground;
+            //Move and draw player
             {
-                playerX = max(playerX - 1, 1);
+                //Get old player position
+                int prevPlayerX = playerX;
+                int prevPlayerY = playerY;
+                //Check if we need to move horizontally
+                if (gameState.joystickX < J_LEFT_TRESH)
+                {
+                    playerX = max(playerX - 1, 1);
+                }
+                else if (gameState.joystickX > J_RIGHT_TRESH)
+                {
+                    playerX = min(playerX + 1, LCD_HORIZONTAL_MAX - 1);
+                }
+                //Check if we need to move vertically
+                if (gameState.joystickY < J_DOWN_TRESH)
+                {
+                    playerY = min(playerY + 1, LCD_VERTICAL_MAX - 2);
+                }
+                else if (gameState.joystickY > J_UP_TRESH)
+                {
+                    playerY = max(playerY - 1, 1);
+                }
+                bool differentXMin = prevPlayerX != playerX;
+                bool differentYMin = prevPlayerY != playerY;
+                //If we have moved, redraw
+                if (differentXMin || differentYMin || justResumed)
+                {
+                    //Erase old player character
+                    ctxPtr->foreground = ctxPtr->background;
+                    Graphics_fillCircle(ctxPtr, prevPlayerX, prevPlayerY, PLAYER_RADIUS);
+                    ctxPtr->foreground = previousFg;
+                    //Draw player character
+                    Graphics_fillCircle(ctxPtr, playerX, playerY, PLAYER_RADIUS);
+                }
             }
-            else if (gameState.joystickX > J_RIGHT_TRESH)
+            //Draw target area, check if player won
             {
-                playerX = min(playerX + 1, LCD_HORIZONTAL_MAX - 1);
+                Graphics_Rectangle targetRect;
+                targetRect.xMin = LCD_HORIZONTAL_MAX / 2 - 2;
+                targetRect.xMax = LCD_HORIZONTAL_MAX / 2 + 2;
+                targetRect.yMin = 0;
+                targetRect.yMax = 4;
+                Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_GREEN);
+                Graphics_fillRectangle(ctxPtr, &targetRect);
+                if (Graphics_isPointWithinRectangle(&targetRect, playerX, playerY))
+                {
+                    won = true;
+                    continue;
+                }
             }
-
-            if (gameState.joystickY < J_DOWN_TRESH)
+            //Move enemies, draw them, check collisions
             {
-                playerY = min(playerY + 1, LCD_VERTICAL_MAX - 2);
+                for (i = 0; i < ENEMIES_COUNT; i++)
+                {
+                    Graphics_Rectangle previousRect;
+                    previousRect.xMin = enemyX[i] - 1;
+                    previousRect.xMax = enemyX[i] + 1;
+                    previousRect.yMin = enemyY[i] - 1;
+                    previousRect.yMax = enemyY[i] + 1;
+                    //Move
+                    if (goingLeft[i])
+                    {
+                        const limitLeft = 2;
+                        enemyX[i]--;
+                        if (enemyX[i] < limitLeft)
+                        {
+                            enemyX[i] = limitLeft;
+                            goingLeft[i] = false;
+                        }
+                        else
+                        {
+                            previousRect.xMin++;
+                        }
+                    }
+                    else
+                    {
+                        const limitRight = LCD_HORIZONTAL_MAX - 2;
+                        enemyX[i]++;
+                        if (enemyX[i] > limitRight)
+                        {
+                            enemyX[i] = limitRight;
+                            goingLeft[i] = true;
+                        }
+                        else
+                        {
+                            previousRect.xMax--;
+                        }
+                    }
+                    //Clear old one
+                    ctxPtr->foreground = ctxPtr->background;
+                    Graphics_fillRectangle(ctxPtr, &previousRect);
+                    //Draw new
+                    Graphics_Rectangle enemyRect;
+                    enemyRect.xMin = enemyX[i] - 1;
+                    enemyRect.xMax = enemyX[i] + 1;
+                    enemyRect.yMin = enemyY[i] - 1;
+                    enemyRect.yMax = enemyY[i] + 1;
+                    Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_RED);
+                    Graphics_fillRectangle(ctxPtr, &enemyRect);
+                }
+                //Check collisions
+                for (i = 0; i < ENEMIES_COUNT; i++)
+                {
+                    Graphics_Rectangle playerRect;
+                    playerRect.xMin = playerX - 4;
+                    playerRect.xMax = playerX + 4;
+                    playerRect.yMin = playerY - 4;
+                    playerRect.yMax = playerY + 4;
+                    if (Graphics_isPointWithinRectangle(&playerRect, enemyX[i], enemyY[i]))
+                    {
+                        alive = false;
+                    };
+                }
+                //Restore color for next iteration
+                Graphics_setForegroundColor(ctxPtr, previousFg);
+                for (i = 0; i < 40000; i++)
+                    ;
             }
-            else if (gameState.joystickY > J_UP_TRESH)
-            {
-                playerY = max(playerY - 1, 1);
-            }
-            int previousFg = ctxPtr->foreground;
-            bool differentXMin = prevPlayerRect.xMin != playerX - 1;
-            bool differentYMin = prevPlayerRect.yMin != playerY - 1;
-            if (differentXMin || differentYMin || justResumed)
-            {
-                //Erase old player character
-                ctxPtr->foreground = ctxPtr->background;
-                Graphics_fillRectangle(ctxPtr, &prevPlayerRect);
-                ctxPtr->foreground = previousFg;
-                //Draw player character
-                Graphics_Rectangle playerRect;
-                playerRect.xMin = playerX - 1;
-                playerRect.xMax = playerX + 1;
-                playerRect.yMin = playerY - 1;
-                playerRect.yMax = playerY + 1;
-                Graphics_fillRectangle(ctxPtr, &playerRect);
-            }
-            //Draw target area
-            Graphics_Rectangle targetRect;
-            targetRect.xMin = LCD_HORIZONTAL_MAX / 2 - 2;
-            targetRect.xMax = LCD_HORIZONTAL_MAX / 2 + 2;
-            targetRect.yMin = 0;
-            targetRect.yMax = 4;
-            Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_GREEN);
-            Graphics_fillRectangle(ctxPtr, &targetRect);
-            Graphics_setForegroundColor(ctxPtr, previousFg);
-            for (i = 0; i < 40000; i++)
-                ;
         }
     }
-    return true;
+    return alive;
 }
