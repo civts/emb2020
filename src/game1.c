@@ -15,18 +15,38 @@ bool game1()
     int playerY = LCD_VERTICAL_MAX - 2;
 
     int i = 0;
+    Graphics_Context *ctxPtr = &gameState.gContext;
+    bool justResumed = true;
     while (playing)
     {
         if (gameState.topButtonClicked)
         {
-            //Save game state
             //Enter pause
+            Graphics_clearDisplay(ctxPtr);
             gameState.topButtonClicked = false;
-            // while (!gameState.topButtonClicked)
-            // {
-            //     //Draw pause screen
-            // }
-            //Restore game
+            while (!gameState.topButtonClicked)
+            {
+                //Draw pause screen
+                Graphics_drawStringCentered(
+                    ctxPtr,
+                    (int8_t *)"PAUSE",
+                    AUTO_STRING_LENGTH,
+                    LCD_HORIZONTAL_MAX / 2,
+                    20,
+                    false);
+                Graphics_drawStringCentered(
+                    ctxPtr,
+                    (int8_t *)"Press S1 to resume",
+                    AUTO_STRING_LENGTH,
+                    LCD_HORIZONTAL_MAX / 2,
+                    80,
+                    false);
+                //Wait for button
+                __sleep();
+            }
+            gameState.topButtonClicked = false;
+            justResumed = true;
+            Graphics_clearDisplay(ctxPtr);
         }
         else
         {
@@ -54,9 +74,10 @@ bool game1()
             {
                 playerY = max(playerY - 1, 1);
             }
-            Graphics_Context *ctxPtr = &gameState.gContext;
             int previousFg = ctxPtr->foreground;
-            if (prevPlayerRect.xMin != playerX - 1 || prevPlayerRect.yMin != playerY - 1)
+            bool differentXMin = prevPlayerRect.xMin != playerX - 1;
+            bool differentYMin = prevPlayerRect.yMin != playerY - 1;
+            if (differentXMin || differentYMin || justResumed)
             {
                 //Erase old player character
                 ctxPtr->foreground = ctxPtr->background;
