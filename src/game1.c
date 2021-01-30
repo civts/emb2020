@@ -1,5 +1,6 @@
 #include "game1.h"
 #include "gameState.h"
+#include "./pause_screen.h"
 #include <stdlib.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
@@ -36,32 +37,8 @@ bool game1()
     {
         if (gameState.topButtonClicked)
         {
-            //Enter pause
-            Graphics_clearDisplay(ctxPtr);
-            gameState.topButtonClicked = false;
-            while (!gameState.topButtonClicked)
-            {
-                //Draw pause screen
-                Graphics_drawStringCentered(
-                    ctxPtr,
-                    (int8_t *)"PAUSE",
-                    AUTO_STRING_LENGTH,
-                    LCD_HORIZONTAL_MAX / 2,
-                    20,
-                    false);
-                Graphics_drawStringCentered(
-                    ctxPtr,
-                    (int8_t *)"Press S1 to resume",
-                    AUTO_STRING_LENGTH,
-                    LCD_HORIZONTAL_MAX / 2,
-                    80,
-                    false);
-                //Wait for button
-                __sleep();
-            }
-            gameState.topButtonClicked = false;
+            pauseScreen();
             justResumed = true;
-            Graphics_clearDisplay(ctxPtr);
         }
         else
         {
