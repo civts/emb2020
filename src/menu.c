@@ -5,7 +5,7 @@
 //Vertical offset for the options
 const int optionsOffset = 50;
 
-const int8_t **const options[] = {"Game 1", "Game 2"};
+const char*const options[] = {"Game 1", "Game 2"};
 const int optionsLength = 2;
 
 void showMenu()
@@ -86,7 +86,7 @@ void _drawOptions(int step)
     {
         Graphics_drawStringCentered(
             ctx,
-            options[i],
+            (int8_t *) options[i],
             AUTO_STRING_LENGTH,
             halfWidth,
             yOffset,

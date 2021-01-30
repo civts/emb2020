@@ -68,7 +68,7 @@ bool game1()
 
             if (gameState.joystickY < J_DOWN_TRESH)
             {
-                playerY = min(playerY + 1, LCD_VERTICAL_MAX - 1);
+                playerY = min(playerY + 1, LCD_VERTICAL_MAX - 2);
             }
             else if (gameState.joystickY > J_UP_TRESH)
             {
@@ -97,10 +97,10 @@ bool game1()
             targetRect.xMax = LCD_HORIZONTAL_MAX / 2 + 2;
             targetRect.yMin = 0;
             targetRect.yMax = 4;
-            ctxPtr->foreground = GRAPHICS_COLOR_GREEN;
+            Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_GREEN);
             Graphics_fillRectangle(ctxPtr, &targetRect);
-            ctxPtr->foreground = previousFg;
-            for (i = 0; i < 20000; i++)
+            Graphics_setForegroundColor(ctxPtr, previousFg);
+            for (i = 0; i < 40000; i++)
                 ;
         }
     }
