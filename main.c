@@ -21,18 +21,20 @@ int main(void)
     //Let player choose game and color theme
     showMenu();
     //Let player play the game
+    bool won;
     switch (gameState.selectedGame)
     {
     case 0:
-      game1();
+      won = game1();
       break;
 
     default:
+      won = false;
       break;
     }
 
-    //Display message "restart by pressing S1"
-    // Go to low power mode
-    PCM_gotoLPM0();
+    //Display won or lost message,
+    //then go to LPM_0 until button is pressed
+    gameEndScreen(won);
   }
 }
