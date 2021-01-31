@@ -20,7 +20,7 @@ void showMenu()
     gameState.screenIAmIn = Settings;
     int previouslySelected = currentlySelected;
     gameState.topButtonClicked = false;
-    bool previouslyDark = false;
+    int previouslyDark = -1;
     while ((!gameState.topButtonClicked) || currentlySelected >= optionsLength)
     {
         //Trigger ADC to read joystick position
@@ -33,9 +33,9 @@ void showMenu()
         {
             Graphics_setBackgroundColor(context, GRAPHICS_COLOR_WHITE);
             Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
-            if (previouslyDark)
+            if (previouslyDark != 0)
             {
-                previouslyDark = false;
+                previouslyDark = 0;
                 Graphics_clearDisplay(context);
             }
         }
@@ -43,9 +43,9 @@ void showMenu()
         {
             Graphics_setBackgroundColor(context, 0x00232323);
             Graphics_setForegroundColor(context, GRAPHICS_COLOR_ANTIQUE_WHITE);
-            if (!previouslyDark)
+            if (previouslyDark != 1)
             {
-                previouslyDark = true;
+                previouslyDark = 1;
                 Graphics_clearDisplay(context);
             }
         }
