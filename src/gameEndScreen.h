@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #ifndef __GAME_END_H__
 #define __GAME_END_H__
 

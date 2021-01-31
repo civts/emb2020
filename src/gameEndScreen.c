@@ -1,5 +1,4 @@
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
-#include <stdbool.h>
 #include "buzzer.h"
 #include "gameState.h"
 #include "gameEndScreen.h"
