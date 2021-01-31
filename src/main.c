@@ -1,8 +1,8 @@
-#include "src/game1.h"
-#include "src/game2.h"
-#include "src/hwInit.h"
-#include "src/gameState.h"
-#include "src/menu.h"
+#include "game1.h"
+#include "game2.h"
+#include "hwInit.h"
+#include "gameState.h"
+#include "menu.h"
 
 int main(void)
 {
