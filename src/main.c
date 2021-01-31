@@ -3,6 +3,7 @@
 #include "hwInit.h"
 #include "gameState.h"
 #include "menu.h"
+#include "gameEndScreen.h"
 
 int main(void)
 {

@@ -2,8 +2,7 @@
 #include <stdbool.h>
 #include "buzzer.h"
 #include "gameState.h"
-#ifndef __GAME_END_
-#define __GAME_END_
+#include "gameEndScreen.h"
 
 void gameEndScreen(bool won)
 {
@@ -12,7 +11,7 @@ void gameEndScreen(bool won)
 
     Graphics_drawStringCentered(
         &ctx,
-        (int8_t *)won ? "YOU WON!" : "You lost",
+        (int8_t *)(won ? "YOU WON!" : "You lost"),
         AUTO_STRING_LENGTH,
         LCD_HORIZONTAL_MAX / 2,
         20,
@@ -29,5 +28,3 @@ void gameEndScreen(bool won)
 
     __sleep();
 }
-
-#endif

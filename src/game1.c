@@ -27,7 +27,7 @@ bool game1()
 
     for (i = 0; i < ENEMIES_COUNT; i++)
     {
-        const pad = 20;
+        const int pad = 20;
         enemyX[i] = rand() % LCD_HORIZONTAL_MAX;
         enemyY[i] = rand() % (LCD_VERTICAL_MAX - 2 * pad) + pad;
         goingLeft[i] = rand() % 2;
@@ -107,7 +107,7 @@ bool game1()
                     //Move
                     if (goingLeft[i])
                     {
-                        const limitLeft = 2;
+                        const int limitLeft = 2;
                         enemyX[i]--;
                         if (enemyX[i] < limitLeft)
                         {
@@ -121,7 +121,7 @@ bool game1()
                     }
                     else
                     {
-                        const limitRight = LCD_HORIZONTAL_MAX - 2;
+                        const int limitRight = LCD_HORIZONTAL_MAX - 2;
                         enemyX[i]++;
                         if (enemyX[i] > limitRight)
                         {
