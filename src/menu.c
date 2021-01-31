@@ -19,62 +19,56 @@ void showMenu()
 
     int previouslySelected = currentlySelected;
     gameState.topButtonClicked = false;
-    int previouslyDark = -1;
+    bool previouslyDark = false;
+    Graphics_Rectangle previousRect;
+    previousRect.xMin = 0;
+    previousRect.xMax = 0;
+    previousRect.yMin = 0;
+    previousRect.yMax = 0;
     while ((!gameState.topButtonClicked) || currentlySelected >= optionsLength)
     {
         //Trigger ADC to read joystick position
         ADC14->CTL0 |= ADC14_CTL0_SC;
 
-        //Get luminosity
-        unsigned long int lux = OPT3001_getLux();
-
-        if (lux > 20)
-        {
-            Graphics_setBackgroundColor(context, GRAPHICS_COLOR_WHITE);
-            Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
-            if (previouslyDark != 0)
-            {
-                previouslyDark = 0;
-                Graphics_clearDisplay(context);
-            }
-        }
-        else if (lux < 10)
-        {
-            Graphics_setBackgroundColor(context, 0x00232323);
-            Graphics_setForegroundColor(context, GRAPHICS_COLOR_ANTIQUE_WHITE);
-            if (previouslyDark != 1)
-            {
-                previouslyDark = 1;
-                Graphics_clearDisplay(context);
-            }
-        }
+        adjustBrightness(&previouslyDark);
 
         if (gameState.joystickY < J_DOWN_TRESH)
         {
-            currentlySelected = min(currentlySelected + 1, optionsLength - 1);
+            currentlySelected = min(currentlySelected + 1, optionsLength);
+            gameState.joystickY = J_DOWN_TRESH + 1;
+            int i;
+            for (i = 0; i < 400000; i++)
+                ;
         }
         else if (gameState.joystickY > J_UP_TRESH)
         {
             currentlySelected = max(currentlySelected - 1, 0);
+            gameState.joystickY = J_UP_TRESH - 1;
+            int i;
+            for (i = 0; i < 400000; i++)
+                ;
         }
 
         _drawTitle();
 
         if (previouslySelected != currentlySelected)
         {
-            _cleanSelectionRectangle(previouslySelected, stepBetweenOptions);
+            _cleanRectangle(&previousRect);
             previouslySelected = currentlySelected;
         }
 
-        _drawSelectionRectangle(currentlySelected, stepBetweenOptions);
+        previousRect = _drawSelectionRectangle(currentlySelected, stepBetweenOptions);
 
         _drawOptions(stepBetweenOptions);
+
+        _drawLightDarkSwitch();
 
         if (gameState.topButtonClicked)
         {
             if (currentlySelected == optionsLength)
             {
-                //TODO: Toggle light/dark
+                gameState.brightness++;
+                gameState.brightness %= 3;
                 gameState.topButtonClicked = false;
             }
         }
@@ -119,7 +113,7 @@ void _drawOptions(int step)
     }
 }
 
-void _drawSelectionRectangle(const int selected, const int step)
+Graphics_Rectangle _drawSelectionRectangle(const int selected, const int step)
 {
     Graphics_Context *context = &gameState.gContext;
     const int pad = 20;
@@ -128,20 +122,99 @@ void _drawSelectionRectangle(const int selected, const int step)
     rectangle.xMax = context->display->width - pad;
     rectangle.yMin = optionsOffset + selected * step - step / 2;
     rectangle.yMax = optionsOffset + selected * step + step / 2;
+
+    if (selected == optionsLength)
+    {
+        rectangle.xMin = context->display->width - 20;
+        rectangle.xMax = context->display->width - 1;
+        rectangle.yMin = context->display->heigth - 15;
+        rectangle.yMax = context->display->heigth - 2;
+    }
     Graphics_drawRectangle(context, &rectangle);
+    return rectangle;
 }
 
-void _cleanSelectionRectangle(const int selected, const int step)
+void _cleanRectangle(const Graphics_Rectangle *rect)
 {
     uint32_t fgColor = gameState.gContext.foreground;
     gameState.gContext.foreground = gameState.gContext.background;
-    Graphics_Context *context = &gameState.gContext;
-    const int pad = 20;
-    Graphics_Rectangle rectangle;
-    rectangle.xMin = pad;
-    rectangle.xMax = context->display->width - pad;
-    rectangle.yMin = optionsOffset + selected * step - step / 2;
-    rectangle.yMax = optionsOffset + selected * step + step / 2;
-    Graphics_drawRectangle(context, &rectangle);
+    Graphics_drawRectangle(&gameState.gContext, rect);
     gameState.gContext.foreground = fgColor;
+}
+
+void _drawLightDarkSwitch()
+{
+    Graphics_Context *context = &gameState.gContext;
+    char str[2];
+    str[1] = '\0';
+    switch (gameState.brightness)
+    {
+    case LIGHT:
+        str[0] = 'L';
+        break;
+    case DARK:
+        str[0] = 'D';
+        break;
+    case AUTO:
+        str[0] = 'A';
+        break;
+    }
+    Graphics_drawString(context,
+                        (int8_t *)str,
+                        AUTO_STRING_LENGTH,
+                        context->display->width - 12,
+                        context->display->heigth - context->font->height - 3,
+                        true);
+}
+
+void adjustBrightness(bool *previouslyDark)
+{
+    Graphics_Context *context = &gameState.gContext;
+    bool useDark = previouslyDark;
+    switch (gameState.brightness)
+    {
+    case AUTO:
+    { //Get luminosity
+        unsigned long int lux = OPT3001_getLux();
+
+        if (lux > 20)
+        {
+            useDark = false;
+        }
+        else if (lux < 10)
+        {
+            useDark = true;
+        }
+        break;
+    }
+    case DARK:
+    {
+        useDark = true;
+        break;
+    }
+    case LIGHT:
+    {
+        useDark = false;
+    }
+    }
+    if (useDark)
+    {
+        if (!(*previouslyDark))
+        {
+            Graphics_setBackgroundColor(context, 0x00232323);
+            Graphics_setForegroundColor(context, GRAPHICS_COLOR_ANTIQUE_WHITE);
+            *previouslyDark = true;
+            Graphics_clearDisplay(context);
+        }
+    }
+    else
+    {
+        if (*previouslyDark)
+        {
+            Graphics_setBackgroundColor(context, GRAPHICS_COLOR_WHITE);
+            Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
+            *previouslyDark = false;
+            Graphics_clearDisplay(context);
+        }
+    }
 }

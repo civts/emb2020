@@ -4,16 +4,15 @@
 #define __GAME_STATE_H__
 
 #define J_UP_TRESH 10000
-#define J_DOWN_TRESH 7000
+#define J_DOWN_TRESH 6000
 #define J_RIGHT_TRESH 10000
 #define J_LEFT_TRESH 6000
 
-enum screen
+enum brightnessOption
 {
-    Settings,
-    Game1,
-    Game2,
-    Changing
+    DARK,
+    LIGHT,
+    AUTO
 };
 
 typedef struct
@@ -22,6 +21,7 @@ typedef struct
     int selectedGame;
     //This allows access to the display graphical context
     Graphics_Context gContext;
+    enum brightnessOption brightness;
 
     bool topButtonClicked;
 
