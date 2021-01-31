@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "utils.h"
 
 Graphics_Rectangle getRectangle(int x, int y)
 {
@@ -13,35 +14,6 @@ Graphics_Rectangle getRectangle(int x, int y)
     rect.yMin = y - 2;
     rect.yMax = y + 2;
     return rect;
-}
-
-bool isOverlapping(const Graphics_Rectangle *rect1, const Graphics_Rectangle *rect2)
-{
-    if (
-        rect1->xMax >= rect2->xMin && rect1->xMax <= rect2->xMax &&
-        rect1->yMax >= rect2->yMin && rect1->yMax <= rect2->yMax)
-    {
-        return true;
-    }
-    else if (
-        rect1->xMin >= rect2->xMin && rect1->xMin <= rect2->xMax &&
-        rect1->yMax >= rect2->yMin && rect1->yMax <= rect2->yMax)
-    {
-        return true;
-    }
-    else if (
-        rect1->xMin >= rect2->xMin && rect1->xMin <= rect2->xMax &&
-        rect1->yMin >= rect2->yMin && rect1->yMin <= rect2->yMax)
-    {
-        return true;
-    }
-    else if (
-        rect1->xMax >= rect2->xMin && rect1->xMax <= rect2->xMax &&
-        rect1->yMin >= rect2->yMin && rect1->yMin <= rect2->yMax)
-    {
-        return true;
-    }
-    return false;
 }
 
 bool game2()

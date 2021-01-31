@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "utils.h"
 
 //Play game 1.
 //Returns true if won, false if lost
@@ -12,6 +13,8 @@ bool game1()
     GrClearDisplay(&gameState.gContext);
     bool alive = true;
     bool won = false;
+    int round = 0;
+    bool newRoundFlag = false;
     gameState.topButtonClicked = false;
 
     int playerX = LCD_HORIZONTAL_MAX / 2;
@@ -21,18 +24,23 @@ bool game1()
     Graphics_Context *ctxPtr = &gameState.gContext;
     bool justResumed = true;
 
-    int enemyX[ENEMIES_COUNT];
-    int enemyY[ENEMIES_COUNT];
-    bool goingLeft[ENEMIES_COUNT];
+    Graphics_Rectangle targetRect;
+    targetRect.xMin = LCD_HORIZONTAL_MAX / 2 - 2;
+    targetRect.xMax = LCD_HORIZONTAL_MAX / 2 + 2;
+    targetRect.yMin = 0;
+    targetRect.yMax = 4;
 
-    for (i = 0; i < ENEMIES_COUNT; i++)
+    int enemyX[ROUND_NUMBER];
+    int enemyY[ROUND_NUMBER];
+    bool goingLeft[ROUND_NUMBER];
+
+    for (i = 0; i < ROUND_NUMBER; i++)
     {
         const int pad = 20;
         enemyX[i] = rand() % LCD_HORIZONTAL_MAX;
         enemyY[i] = rand() % (LCD_VERTICAL_MAX - 2 * pad) + pad;
         goingLeft[i] = rand() % 2;
     }
-    i = 0;
     while (alive && !won)
     {
         if (gameState.topButtonClicked)
@@ -42,8 +50,39 @@ bool game1()
         }
         else
         {
-            ADC14->CTL0 |= ADC14_CTL0_SC;
             uint32_t previousFg = ctxPtr->foreground;
+            if (newRoundFlag || justResumed)
+            {
+                if (newRoundFlag)
+                {
+                    newRoundFlag = false;
+                    //Delete old one
+                    ctxPtr->foreground = ctxPtr->background;
+                    Graphics_fillRectangle(ctxPtr, &targetRect);
+                    if (round > 0)
+                    {
+                        //Create new one
+                        targetRect.xMin = rand() % (LCD_HORIZONTAL_MAX - 8) + 4;
+                        targetRect.xMax = targetRect.xMin + 4;
+                        if (round % 2)
+                        {
+                            targetRect.yMin = LCD_HORIZONTAL_MAX - 4;
+                            targetRect.yMax = LCD_HORIZONTAL_MAX;
+                        }
+                        else
+                        {
+                            targetRect.yMin = 0;
+                            targetRect.yMax = 4;
+                        }
+                    }
+                }
+                //Draw target area
+                Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_GREEN);
+                Graphics_fillRectangle(ctxPtr, &targetRect);
+                ctxPtr->foreground = previousFg;
+            }
+            ADC14->CTL0 |= ADC14_CTL0_SC;
+
             //Move and draw player
             {
                 //Get old player position
@@ -80,24 +119,33 @@ bool game1()
                     Graphics_fillCircle(ctxPtr, playerX, playerY, PLAYER_RADIUS);
                 }
             }
-            //Draw target area, check if player won
+            //Check if player won he round
             {
-                Graphics_Rectangle targetRect;
-                targetRect.xMin = LCD_HORIZONTAL_MAX / 2 - 2;
-                targetRect.xMax = LCD_HORIZONTAL_MAX / 2 + 2;
-                targetRect.yMin = 0;
-                targetRect.yMax = 4;
-                Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_GREEN);
-                Graphics_fillRectangle(ctxPtr, &targetRect);
-                if (Graphics_isPointWithinRectangle(&targetRect, playerX, playerY))
-                {
-                    won = true;
-                    continue;
+                Graphics_Rectangle playerRect;
+                playerRect.xMin = playerX - 2;
+                playerRect.xMax = playerX + 2;
+                playerRect.yMin = playerY - 2;
+                playerRect.yMax = playerY + 2;
+                if (isOverlapping(&targetRect, &playerRect))
+                { //Player got the rectangle
+                    round++;
+                    newRoundFlag = true;
+                    //Erase old target area
+                    Graphics_setForegroundColor(ctxPtr, ctxPtr->background);
+                    Graphics_fillRectangle(ctxPtr, &targetRect);
+                    if (round == ROUND_NUMBER)
+                    {
+                        won = true;
+                        ctxPtr->foreground = previousFg;
+                        continue;
+                    }
                 }
             }
             //Move enemies, draw them, check collisions
             {
-                for (i = 0; i < ENEMIES_COUNT; i++)
+                //Each round, one enemy is added
+                int activeEnemies = round;
+                for (i = 0; i < activeEnemies; i++)
                 {
                     Graphics_Rectangle previousRect;
                     previousRect.xMin = enemyX[i] - 1;
@@ -146,7 +194,7 @@ bool game1()
                     Graphics_fillRectangle(ctxPtr, &enemyRect);
                 }
                 //Check collisions
-                for (i = 0; i < ENEMIES_COUNT; i++)
+                for (i = 0; i < activeEnemies; i++)
                 {
                     Graphics_Rectangle playerRect;
                     playerRect.xMin = playerX - 4;
@@ -163,6 +211,7 @@ bool game1()
                 for (i = 0; i < 40000; i++)
                     ;
             }
+            justResumed = false;
         }
     }
     return alive;
