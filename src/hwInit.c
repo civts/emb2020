@@ -1,11 +1,13 @@
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
 #include "../LightSensor/HAL_OPT3001.h"
 #include "../LightSensor/HAL_I2C.h"
-#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <ti/devices/msp432p4xx/driverlib/flash.h>
 #include <ti/grlib/grlib.h>
 #include "gameState.h"
 #include "hwInit.h"
+#include "buzzer.h"
 
 void hwInit()
 {
@@ -29,6 +31,7 @@ void hwInit()
     CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     CS_initClockSignal(CS_ACLK, CS_REFOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
+    buzzerInit();
     _graphicsInit();
     _initButton();
     _lightSensorInit();
