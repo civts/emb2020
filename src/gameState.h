@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include "ti/grlib/grlib.h"
-#ifndef __GAME_INFO_H__
-#define __GAME_INFO_H__
+#ifndef __GAME_STATE_H__
+#define __GAME_STATE_H__
 
 #define J_UP_TRESH 10000
 #define J_DOWN_TRESH 7000
@@ -20,10 +20,6 @@ typedef struct
 {
     //The game the player is going to play
     int selectedGame;
-    //Wether to use dark colors or not
-    bool useDarkMode;
-    //The screen the user is viewing
-    enum screen screenIAmIn;
     //This allows access to the display graphical context
     Graphics_Context gContext;
 

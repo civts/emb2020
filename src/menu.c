@@ -17,7 +17,6 @@ void showMenu()
     int currentlySelected = 0;
     int stepBetweenOptions = context->font->height * 2;
 
-    gameState.screenIAmIn = Settings;
     int previouslySelected = currentlySelected;
     gameState.topButtonClicked = false;
     int previouslyDark = -1;
@@ -82,7 +81,6 @@ void showMenu()
     }
     gameState.topButtonClicked = false;
     gameState.selectedGame = currentlySelected;
-    gameState.screenIAmIn = Changing;
 }
 
 void _drawTitle()

@@ -7,8 +7,6 @@
 
 int main(void)
 {
-  gameState.screenIAmIn = Changing;
-  gameState.useDarkMode = false;
   gameState.topButtonClicked = false;
   gameState.joystickX = 8000;
   gameState.joystickY = 8000;
