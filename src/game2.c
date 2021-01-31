@@ -273,7 +273,7 @@ bool game2()
                         }
                     }
                 }
-                Graphics_setForegroundColor(ctxPtr, previousFg);
+                ctxPtr->foreground = previousFg;
             }
         }
         for (i = 0; i < 20000; i++)

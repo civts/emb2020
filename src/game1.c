@@ -67,10 +67,10 @@ bool game1()
                 {
                     playerY = max(playerY - 1, 1);
                 }
-                bool differentXMin = prevPlayerX != playerX;
-                bool differentYMin = prevPlayerY != playerY;
+                bool differentX = prevPlayerX != playerX;
+                bool differentY = prevPlayerY != playerY;
                 //If we have moved, redraw
-                if (differentXMin || differentYMin || justResumed)
+                if (differentX || differentY || justResumed)
                 {
                     //Erase old player character
                     ctxPtr->foreground = ctxPtr->background;
@@ -159,7 +159,7 @@ bool game1()
                     };
                 }
                 //Restore color for next iteration
-                Graphics_setForegroundColor(ctxPtr, previousFg);
+                ctxPtr->foreground = previousFg;
                 for (i = 0; i < 40000; i++)
                     ;
             }

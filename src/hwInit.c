@@ -1,4 +1,6 @@
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "../LightSensor/HAL_OPT3001.h"
+#include "../LightSensor/HAL_I2C.h"
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include <ti/grlib/grlib.h>
@@ -29,6 +31,7 @@ void hwInit()
 
     _graphicsInit();
     _initButton();
+    _lightSensorInit();
     __enable_irq();
 }
 
@@ -50,6 +53,18 @@ void _graphicsInit()
     Graphics_setBackgroundColor(gContext, GRAPHICS_COLOR_WHITE);
     GrContextFontSet(gContext, &g_sFontFixed6x8);
     Graphics_clearDisplay(gContext);
+}
+
+void _lightSensorInit()
+{
+    // Initialize I2C communication
+    Init_I2C_GPIO();
+    I2C_init();
+
+    // Initialize OPT3001 digital ambient light sensor
+    OPT3001_init();
+
+    __delay_cycles(100000);
 }
 
 void _initButton(void)

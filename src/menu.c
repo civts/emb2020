@@ -1,6 +1,8 @@
 #include "gameState.h"
 #include "ti/devices/msp432p4xx/inc/msp432p401r.h"
 #include "menu.h"
+#include "../LightSensor/HAL_OPT3001.h"
+#include <stdio.h>
 
 //Vertical offset for the options
 const int optionsOffset = 50;
@@ -18,10 +20,35 @@ void showMenu()
     gameState.screenIAmIn = Settings;
     int previouslySelected = currentlySelected;
     gameState.topButtonClicked = false;
+    bool previouslyDark = false;
     while ((!gameState.topButtonClicked) || currentlySelected >= optionsLength)
     {
         //Trigger ADC to read joystick position
         ADC14->CTL0 |= ADC14_CTL0_SC;
+
+        //Get luminosity
+        unsigned long int lux = OPT3001_getLux();
+
+        if (lux > 20)
+        {
+            Graphics_setBackgroundColor(context, GRAPHICS_COLOR_WHITE);
+            Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
+            if (previouslyDark)
+            {
+                previouslyDark = false;
+                Graphics_clearDisplay(context);
+            }
+        }
+        else if (lux < 10)
+        {
+            Graphics_setBackgroundColor(context, 0x00232323);
+            Graphics_setForegroundColor(context, GRAPHICS_COLOR_ANTIQUE_WHITE);
+            if (!previouslyDark)
+            {
+                previouslyDark = true;
+                Graphics_clearDisplay(context);
+            }
+        }
 
         if (gameState.joystickY < J_DOWN_TRESH)
         {
@@ -72,14 +99,12 @@ void _drawTitle()
         width / 2,
         font_height / 2 + 2,
         false);
-    Graphics_setForegroundColor(ctx, previousColor);
+    ctx->foreground = previousColor;
 }
 
 void _drawOptions(int step)
 {
     Graphics_Context *ctx = &gameState.gContext;
-    uint32_t previousColor = ctx->foreground;
-    Graphics_setForegroundColor(ctx, GRAPHICS_COLOR_BLACK);
     int halfWidth = ctx->display->width / 2;
     int yOffset = optionsOffset;
     int i;
@@ -94,7 +119,6 @@ void _drawOptions(int step)
             false);
         yOffset += step;
     }
-    Graphics_setForegroundColor(ctx, previousColor);
 }
 
 void _drawSelectionRectangle(const int selected, const int step)
@@ -111,7 +135,7 @@ void _drawSelectionRectangle(const int selected, const int step)
 
 void _cleanSelectionRectangle(const int selected, const int step)
 {
-    int fgColor = gameState.gContext.foreground;
+    uint32_t fgColor = gameState.gContext.foreground;
     gameState.gContext.foreground = gameState.gContext.background;
     Graphics_Context *context = &gameState.gContext;
     const int pad = 20;

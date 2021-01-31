@@ -7,6 +7,8 @@ void hwInit();
 
 void _graphicsInit();
 
+void _lightSensorInit();
+
 void _initButton();
 
 void configure_ADC();
