@@ -2,8 +2,6 @@
 #ifndef __GAME_2_H__
 #define __GAME_2_H__
 
-#define MAX_SNAKE_LEN 10
-
 enum direction_t
 {
     UP,
@@ -11,6 +9,9 @@ enum direction_t
     LEFT,
     RIGHT,
 };
+
+//Let player choose maximum snake length
+int chooseMaxLength();
 
 //Play game 2.
 //Returns true if won, false if lost

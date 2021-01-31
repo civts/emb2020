@@ -2,9 +2,12 @@
 #include "./pause_screen.h"
 #include "gameState.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include "../LcdDriver/Crystalfontz128x128_ST7735.h"
 #include "utils.h"
+#define OPT_LEN 10
+#define MAXL 100
 
 Graphics_Rectangle getRectangle(int x, int y)
 {
@@ -18,6 +21,7 @@ Graphics_Rectangle getRectangle(int x, int y)
 
 bool game2()
 {
+    int maxSnakeLength = chooseMaxLength();
     GrClearDisplay(&gameState.gContext);
     bool alive = true;
     bool won = false;
@@ -31,8 +35,8 @@ bool game2()
     int snakeLength = 1;
     int headIndex = 0;
     int tailIndex = 0;
-    int segmentsX[MAX_SNAKE_LEN];
-    int segmentsY[MAX_SNAKE_LEN];
+    int segmentsX[MAXL];
+    int segmentsY[MAXL];
     int appleX = -1;
     int appleY = -1;
 
@@ -138,9 +142,9 @@ bool game2()
                     //Duplicate head in next cell
                     int prevHeadIndex = headIndex;
                     headIndex++;
-                    headIndex %= MAX_SNAKE_LEN;
+                    headIndex %= MAXL;
                     tailIndex++;
-                    tailIndex %= MAX_SNAKE_LEN;
+                    tailIndex %= MAXL;
                     segmentsX[headIndex] = segmentsX[prevHeadIndex];
                     segmentsY[headIndex] = segmentsY[prevHeadIndex];
                     //Update head
@@ -197,8 +201,8 @@ bool game2()
                                 int i;
                                 for (i = 0; i < snakeLength; i++)
                                 {
-                                    int x = segmentsX[(tailIndex + i) % MAX_SNAKE_LEN];
-                                    int y = segmentsY[(tailIndex + i) % MAX_SNAKE_LEN];
+                                    int x = segmentsX[(tailIndex + i) % MAXL];
+                                    int y = segmentsY[(tailIndex + i) % MAXL];
                                     if (Graphics_isPointWithinRectangle(&appleRect, x, y))
                                     {
                                         valid = false;
@@ -222,14 +226,14 @@ bool game2()
 
                         ctxPtr->foreground = previousFg;
                         snakeLength++;
-                        if (snakeLength == MAX_SNAKE_LEN)
+                        if (snakeLength == maxSnakeLength)
                         {
                             won = true;
                             continue;
                         }
                         justAteFruit = true;
                         tailIndex--;
-                        tailIndex %= MAX_SNAKE_LEN;
+                        tailIndex %= MAXL;
                     }
                 }
                 { //Check for collision with itself
@@ -237,8 +241,8 @@ bool game2()
                     Graphics_Rectangle headRect = getRectangle(segmentsX[headIndex], segmentsY[headIndex]);
                     for (i = 0; i < snakeLength - 1; i++)
                     {
-                        int x = segmentsX[(tailIndex + i) % MAX_SNAKE_LEN];
-                        int y = segmentsY[(tailIndex + i) % MAX_SNAKE_LEN];
+                        int x = segmentsX[(tailIndex + i) % MAXL];
+                        int y = segmentsY[(tailIndex + i) % MAXL];
                         if (Graphics_isPointWithinRectangle(&headRect, x, y))
                         {
                             alive = false;
@@ -252,4 +256,74 @@ bool game2()
             ;
     }
     return alive;
+}
+
+int chooseMaxLength()
+{
+    Graphics_Context *ctx = &gameState.gContext;
+    Graphics_clearDisplay(ctx);
+    Graphics_drawStringCentered(ctx,
+                                (int8_t *)"Choose max score",
+                                AUTO_STRING_LENGTH,
+                                LCD_HORIZONTAL_MAX / 2,
+                                10,
+                                true);
+    int options[OPT_LEN];
+    int i;
+    for (i = 0; i < OPT_LEN; i++)
+    {
+        options[i] = 10 * (i + 1);
+    }
+    assert(options[OPT_LEN - 1] <= MAXL);
+    int selected = 0;
+    Graphics_Rectangle r;
+    r.xMin = 0;
+    r.xMax = LCD_HORIZONTAL_MAX;
+    r.yMin = 40;
+    r.yMax = 60;
+    uint32_t previousFg = ctx->foreground;
+    int j = 0;
+    bool shouldRedraw = true;
+    while (!gameState.topButtonClicked)
+    {
+        j++;
+        ADC14->CTL0 |= ADC14_CTL0_SC;
+        if (j == 10 || shouldRedraw)
+        {
+            j = 0;
+            if (gameState.joystickY < J_DOWN_TRESH)
+            {
+                gameState.joystickY = J_DOWN_TRESH + 1;
+                selected--;
+                if (selected < 0)
+                {
+                    selected = OPT_LEN - 1;
+                }
+                shouldRedraw = true;
+            }
+            else if (gameState.joystickY > J_UP_TRESH)
+            {
+                gameState.joystickY = J_UP_TRESH - 1;
+                selected++;
+                selected %= OPT_LEN;
+                shouldRedraw = true;
+            }
+
+            if (shouldRedraw)
+            {
+                ctx->foreground = ctx->background;
+                Graphics_fillRectangle(ctx, &r);
+                ctx->foreground = previousFg;
+                char string[4];
+                sprintf(string, "%3d", options[selected]);
+
+                Graphics_drawStringCentered(ctx, (int8_t *)string, AUTO_STRING_LENGTH, LCD_HORIZONTAL_MAX / 2, 50, false);
+            }
+        }
+        shouldRedraw = false;
+        for (i = 0; i < 40000; i++)
+            ;
+    }
+    gameState.topButtonClicked = false;
+    return options[selected];
 }
