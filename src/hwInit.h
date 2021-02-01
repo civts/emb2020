@@ -1,8 +1,8 @@
 #ifndef __HW_INIT_H__
 #define __HW_INIT_H__
 
-//Performs the hardware initialization
-//Also initializes the graphics context
+// Performs the hardware initialization
+// Also initializes the graphics context
 void hwInit();
 
 void _graphicsInit();

@@ -13,7 +13,7 @@ const Timer_A_UpModeConfig upConfig = {
 
 void buzzerInit()
 {
-    /* Configures P2.7 to PM_TA0.4 for using Timer PWM to control LED */
+    /* Configures P2.7 to PM_TA0.4 */
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7,
                                                 GPIO_PRIMARY_MODULE_FUNCTION);
     /* Configuring Timer_A0 for Up Mode */
@@ -34,7 +34,7 @@ void playWinTone()
             TIMER_A_CAPTURECOMPARE_REGISTER_4,        // Use CCR3
             TIMER_A_CAPTURECOMPARE_INTERRUPT_DISABLE, // Disable CCR interrupt
             TIMER_A_OUTPUTMODE_TOGGLE_SET,            // Toggle output but
-            1000 * i                                  // 10% Duty Cycle initially
+            1000 * i                                  // Duty Cycle active portion
         };
 
         Timer_A_initCompare(TIMER_A0_BASE, &compareConfig_PWM);
@@ -61,7 +61,7 @@ void playLossTone()
             TIMER_A_CAPTURECOMPARE_REGISTER_4,        // Use CCR3
             TIMER_A_CAPTURECOMPARE_INTERRUPT_DISABLE, // Disable CCR interrupt
             TIMER_A_OUTPUTMODE_TOGGLE_SET,            // Toggle output but
-            1000 * i                                  // 10% Duty Cycle initially
+            1000 * i                                  // Duty Cycle active portion
         };
 
         Timer_A_initCompare(TIMER_A0_BASE, &compareConfig_PWM);

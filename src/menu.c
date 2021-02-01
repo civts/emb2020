@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 //Vertical offset for the options
-const int optionsOffset = 50;
+const int optionsOffset = 60;
 
 const char *const options[] = {"Game 1", "Snake"};
 const int optionsLength = 2;
@@ -82,15 +82,18 @@ void _drawTitle()
     Graphics_Context *ctx = &gameState.gContext;
     uint32_t previousColor = ctx->foreground;
     Graphics_setForegroundColor(ctx, GRAPHICS_COLOR_GREEN);
-    int font_height = ctx->font->height;
     int width = ctx->display->width;
+
+    const Graphics_Font *previousFont = ctx->font;
+    GrContextFontSet(ctx, &g_sFontCm16b);
     Graphics_drawStringCentered(
         ctx,
-        (int8_t *)"Game system 2",
+        (int8_t *)"MSP Games",
         AUTO_STRING_LENGTH,
         width / 2,
-        font_height / 2 + 2,
+        22,
         false);
+    GrContextFontSet(ctx, previousFont);
     ctx->foreground = previousColor;
 }
 
