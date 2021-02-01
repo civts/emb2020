@@ -18,6 +18,15 @@ Graphics_Rectangle getRectangle(int x, int y)
     rect.yMax = y + 2;
     return rect;
 }
+Graphics_Rectangle getDecorationRectangle(int x, int y)
+{
+    Graphics_Rectangle rect;
+    rect.xMin = x - 1;
+    rect.xMax = x + 1;
+    rect.yMin = y - 1;
+    rect.yMax = y + 1;
+    return rect;
+}
 
 bool game2()
 {
@@ -30,7 +39,6 @@ bool game2()
 
     Graphics_Context *ctxPtr = &gameState.gContext;
     bool justResumed = true;
-    bool justAteFruit = true;
 
     int snakeLength = 1;
     int headIndex = 0;
@@ -125,22 +133,26 @@ bool game2()
             if (j == 40)
             {
                 j = 0;
-                { //Delete last segment if necessary
-                    if (justAteFruit)
-                    {
-                        justAteFruit = false;
-                    }
-                    else
-                    {
+                { //Delete last segment
                         //Erase last player segment
-                        Graphics_Rectangle lastSegment = getRectangle(segmentsX[tailIndex], segmentsY[tailIndex]);
+                        Graphics_Rectangle lastSegment = getRectangle(
+                            segmentsX[tailIndex],
+                            segmentsY[tailIndex]);
                         ctxPtr->foreground = ctxPtr->background;
                         Graphics_fillRectangle(ctxPtr, &lastSegment);
-                    }
                 }
                 { //Move player
                     //Duplicate head in next cell
                     int prevHeadIndex = headIndex;
+                    { //Draw snake decoration
+                        if (snakeLength > 1)
+                        {
+                            Graphics_Rectangle decoration = getDecorationRectangle(
+                                segmentsX[headIndex],
+                                segmentsY[headIndex]);
+                            Graphics_drawRectangle(ctxPtr, &decoration);
+                        }
+                    }
                     headIndex++;
                     headIndex %= MAXL;
                     tailIndex++;
@@ -151,34 +163,38 @@ bool game2()
                     switch (direction)
                     {
                     case UP:
-                        segmentsY[headIndex] = segmentsY[headIndex] - SPEED;
+                        segmentsY[headIndex] -= SPEED;
                         lastMoved = UP;
                         break;
                     case DOWN:
-                        segmentsY[headIndex] = segmentsY[headIndex] + SPEED;
+                        segmentsY[headIndex] += SPEED;
                         lastMoved = DOWN;
                         break;
                     case RIGHT:
-                        segmentsX[headIndex] = segmentsX[headIndex] + SPEED;
+                        segmentsX[headIndex] += SPEED;
                         lastMoved = RIGHT;
                         break;
                     case LEFT:
-                        segmentsX[headIndex] = segmentsX[headIndex] - SPEED;
+                        segmentsX[headIndex] -= SPEED;
                         lastMoved = LEFT;
                         break;
                     }
                     ctxPtr->foreground = previousFg;
                     //Draw head segment
-                    Graphics_Rectangle headRect = getRectangle(segmentsX[headIndex], segmentsY[headIndex]);
+                    Graphics_Rectangle headRect = getRectangle(
+                        segmentsX[headIndex],
+                        segmentsY[headIndex]);
                     Graphics_fillRectangle(ctxPtr, &headRect);
                 }
                 { //Check wall collision
-                    if (segmentsY[headIndex] < 2 || segmentsY[headIndex] > LCD_VERTICAL_MAX - 2)
+                    if (segmentsY[headIndex] < 2 ||
+                        segmentsY[headIndex] > LCD_VERTICAL_MAX - 2)
                     {
                         alive = false;
                         continue;
                     }
-                    if (segmentsX[headIndex] < 2 || segmentsX[headIndex] > LCD_HORIZONTAL_MAX - 2)
+                    if (segmentsX[headIndex] < 2 ||
+                        segmentsX[headIndex] > LCD_HORIZONTAL_MAX - 2)
                     {
                         alive = false;
                         continue;
@@ -203,7 +219,8 @@ bool game2()
                                 {
                                     int x = segmentsX[(tailIndex + i) % MAXL];
                                     int y = segmentsY[(tailIndex + i) % MAXL];
-                                    if (Graphics_isPointWithinRectangle(&appleRect, x, y))
+                                    Graphics_Rectangle r = getRectangle(x, y);
+                                    if (isOverlapping(&appleRect, &r))
                                     {
                                         valid = false;
                                     }
@@ -213,7 +230,9 @@ bool game2()
                         Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_RED);
                         Graphics_fillRectangle(ctxPtr, &appleRect);
                     }
-                    Graphics_Rectangle headRect = getRectangle(segmentsX[headIndex], segmentsY[headIndex]);
+                    Graphics_Rectangle headRect = getRectangle(
+                        segmentsX[headIndex],
+                        segmentsY[headIndex]);
                     if (isOverlapping(&appleRect, &headRect))
                     { //Eat apple
                         appleX = -1;
@@ -231,14 +250,15 @@ bool game2()
                             won = true;
                             continue;
                         }
-                        justAteFruit = true;
                         tailIndex--;
                         tailIndex %= MAXL;
                     }
                 }
                 { //Check for collision with itself
                     int i;
-                    Graphics_Rectangle headRect = getRectangle(segmentsX[headIndex], segmentsY[headIndex]);
+                    Graphics_Rectangle headRect = getRectangle(
+                        segmentsX[headIndex],
+                        segmentsY[headIndex]);
                     for (i = 0; i < snakeLength - 1; i++)
                     {
                         int x = segmentsX[(tailIndex + i) % MAXL];
@@ -317,7 +337,13 @@ int chooseMaxLength()
                 char string[4];
                 sprintf(string, "%3d", options[selected]);
 
-                Graphics_drawStringCentered(ctx, (int8_t *)string, AUTO_STRING_LENGTH, LCD_HORIZONTAL_MAX / 2, 50, false);
+                Graphics_drawStringCentered(
+                    ctx,
+                    (int8_t *)string,
+                    AUTO_STRING_LENGTH,
+                    LCD_HORIZONTAL_MAX / 2,
+                    50,
+                    false);
             }
         }
         shouldRedraw = false;

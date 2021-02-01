@@ -10,7 +10,7 @@ int main(void)
   gameState.topButtonClicked = false;
   gameState.joystickX = 8000;
   gameState.joystickY = 8000;
-  gameState.brightness = DARK;
+  gameState.brightness = AUTO;
 
   //Init hardware and graphics
   hwInit();
