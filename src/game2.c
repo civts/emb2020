@@ -55,6 +55,7 @@ bool game2()
 
     int i = 0;
     int j = 0;
+    uint32_t previousFg = ctxPtr->foreground;
     while (alive && !won)
     {
         j++;
@@ -62,11 +63,26 @@ bool game2()
         {
             pauseScreen();
             justResumed = true;
+            int i;
+            for (i = 0; i < snakeLength; i++)
+            {
+                int index = (i + tailIndex) % MAXL;
+                ctxPtr->foreground = previousFg;
+                Graphics_Rectangle s = getRectangle(
+                    segmentsX[index],
+                    segmentsY[index]);
+                Graphics_fillRectangle(ctxPtr, &s);
+                Graphics_Rectangle d = getDecorationRectangle(
+                    segmentsX[index],
+                    segmentsY[index]);
+                ctxPtr->foreground = ctxPtr->background;
+                Graphics_drawRectangle(ctxPtr, &d);
+                ctxPtr->foreground = previousFg;
+            }
         }
         else
         {
             ADC14->CTL0 |= ADC14_CTL0_SC;
-            uint32_t previousFg = ctxPtr->foreground;
             { //Update player direction, if necessary
                 int lStrength = 0;
                 int rStrength = 0;
@@ -134,12 +150,12 @@ bool game2()
             {
                 j = 0;
                 { //Delete last segment
-                        //Erase last player segment
-                        Graphics_Rectangle lastSegment = getRectangle(
-                            segmentsX[tailIndex],
-                            segmentsY[tailIndex]);
-                        ctxPtr->foreground = ctxPtr->background;
-                        Graphics_fillRectangle(ctxPtr, &lastSegment);
+                    //Erase last player segment
+                    Graphics_Rectangle lastSegment = getRectangle(
+                        segmentsX[tailIndex],
+                        segmentsY[tailIndex]);
+                    ctxPtr->foreground = ctxPtr->background;
+                    Graphics_fillRectangle(ctxPtr, &lastSegment);
                 }
                 { //Move player
                     //Duplicate head in next cell
@@ -270,6 +286,7 @@ bool game2()
                     }
                 }
                 ctxPtr->foreground = previousFg;
+                justResumed = false;
             }
         }
         for (i = 0; i < 20000; i++)
