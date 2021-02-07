@@ -1,9 +1,10 @@
+#include "hw_dependent/pcm.h"
+#include "hw_dependent/hwInit.h"
 #include "game1.h"
 #include "game2.h"
 #include "gameState.h"
 #include "gameEndScreen.h"
 #include "menu.h"
-#include "hw_dependent/hwInit.h"
 
 int main(void)
 {
@@ -21,6 +22,7 @@ int main(void)
 
     //Let player choose game and color theme
     showMenu();
+
     //Let player play the game
     bool won;
     switch (gameState.selectedGame)
@@ -31,14 +33,15 @@ int main(void)
     case 1:
       won = game2();
       break;
-
     default:
       won = false;
       break;
     }
 
     //Display won or lost message,
-    //then go to LPM_0 until button is pressed
     gameEndScreen(won);
+
+    //Go to low power mode until button is pressed
+    gotoLPM();
   }
 }

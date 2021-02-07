@@ -2,7 +2,6 @@
 #include "gameEndScreen.h"
 #include "hw_dependent/buzzer.h"
 #include "hw_dependent/display.h"
-#include "hw_dependent/pcm.h"
 
 void gameEndScreen(bool won)
 {
@@ -21,6 +20,4 @@ void gameEndScreen(bool won)
         DISPLAY_WIDTH / 2,
         80,
         false);
-
-    gotoLPM();
 }
