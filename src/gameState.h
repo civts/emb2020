@@ -7,13 +7,15 @@
 #define J_DOWN_TRESH 6000
 #define J_RIGHT_TRESH 10000
 #define J_LEFT_TRESH 6000
+#define J_H_INITIAL 8000
+#define J_V_INITIAL 8000
 
-enum brightnessOption
+typedef enum
 {
     DARK,
     LIGHT,
     AUTO
-};
+} brightnessOption;
 
 typedef struct
 {
@@ -21,9 +23,9 @@ typedef struct
     int selectedGame;
     //This allows access to the display graphical context
     Graphics_Context gContext;
-    enum brightnessOption brightness;
+    brightnessOption brightness;
 
-    bool topButtonClicked;
+    bool buttonClicked;
 
     uint16_t joystickX;
     uint16_t joystickY;

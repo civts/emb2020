@@ -1,11 +1,11 @@
 #include "game2.h"
-#include "./pause_screen.h"
+#include "pause_screen.h"
 #include "gameState.h"
+#include "hw_dependent/joystick.h"
+#include "hw_dependent/display.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <ti/devices/msp432p4xx/inc/msp432p401r.h>
-#include "../LcdDriver/Crystalfontz128x128_ST7735.h"
-#include "utils.h"
+
 #define OPT_LEN 10
 #define MAXL 100
 
@@ -31,13 +31,12 @@ Graphics_Rectangle getDecorationRectangle(int x, int y)
 bool game2()
 {
     int maxSnakeLength = chooseMaxLength();
-    GrClearDisplay(&gameState.gContext);
+    clearDisplay();
     bool alive = true;
     bool won = false;
-    gameState.topButtonClicked = false;
+    gameState.buttonClicked = false;
     const int SPEED = 5;
 
-    Graphics_Context *ctxPtr = &gameState.gContext;
     bool justResumed = true;
 
     int snakeLength = 1;
@@ -48,18 +47,18 @@ bool game2()
     int appleX = -1;
     int appleY = -1;
 
-    segmentsX[0] = LCD_HORIZONTAL_MAX / 2;
-    segmentsY[0] = LCD_VERTICAL_MAX - 1;
+    segmentsX[0] = DISPLAY_WIDTH / 2;
+    segmentsY[0] = DISPLAY_HEIGHT - 1;
     enum direction_t direction = UP;
     enum direction_t lastMoved = UP;
 
     int i = 0;
     int j = 0;
-    uint32_t previousFg = ctxPtr->foreground;
+    uint32_t previousFg = getForegroundColor();
     while (alive && !won)
     {
         j++;
-        if (gameState.topButtonClicked)
+        if (gameState.buttonClicked)
         {
             pauseScreen();
             justResumed = true;
@@ -67,22 +66,22 @@ bool game2()
             for (i = 0; i < snakeLength; i++)
             {
                 int index = (i + tailIndex) % MAXL;
-                ctxPtr->foreground = previousFg;
+                setForegroundColorTranslated(previousFg);
                 Graphics_Rectangle s = getRectangle(
                     segmentsX[index],
                     segmentsY[index]);
-                Graphics_fillRectangle(ctxPtr, &s);
+                fillRectangle(&s);
                 Graphics_Rectangle d = getDecorationRectangle(
                     segmentsX[index],
                     segmentsY[index]);
-                ctxPtr->foreground = ctxPtr->background;
-                Graphics_drawRectangle(ctxPtr, &d);
-                ctxPtr->foreground = previousFg;
+                setForegroundColorTranslated(getBackgroundColor());
+                drawRectangle(&d);
+                setForegroundColorTranslated(previousFg);
             }
         }
         else
         {
-            ADC14->CTL0 |= ADC14_CTL0_SC;
+            readJoystickPosition();
             { //Update player direction, if necessary
                 int lStrength = 0;
                 int rStrength = 0;
@@ -154,8 +153,8 @@ bool game2()
                     Graphics_Rectangle lastSegment = getRectangle(
                         segmentsX[tailIndex],
                         segmentsY[tailIndex]);
-                    ctxPtr->foreground = ctxPtr->background;
-                    Graphics_fillRectangle(ctxPtr, &lastSegment);
+                    setForegroundColorTranslated(getBackgroundColor());
+                    fillRectangle(&lastSegment);
                 }
                 { //Move player
                     //Duplicate head in next cell
@@ -166,7 +165,7 @@ bool game2()
                             Graphics_Rectangle decoration = getDecorationRectangle(
                                 segmentsX[headIndex],
                                 segmentsY[headIndex]);
-                            Graphics_drawRectangle(ctxPtr, &decoration);
+                            drawRectangle(&decoration);
                         }
                     }
                     headIndex++;
@@ -195,22 +194,22 @@ bool game2()
                         lastMoved = LEFT;
                         break;
                     }
-                    ctxPtr->foreground = previousFg;
+                    setForegroundColorTranslated(previousFg);
                     //Draw head segment
                     Graphics_Rectangle headRect = getRectangle(
                         segmentsX[headIndex],
                         segmentsY[headIndex]);
-                    Graphics_fillRectangle(ctxPtr, &headRect);
+                    fillRectangle(&headRect);
                 }
                 { //Check wall collision
                     if (segmentsY[headIndex] < 2 ||
-                        segmentsY[headIndex] > LCD_VERTICAL_MAX - 2)
+                        segmentsY[headIndex] > DISPLAY_HEIGHT - 2)
                     {
                         alive = false;
                         continue;
                     }
                     if (segmentsX[headIndex] < 2 ||
-                        segmentsX[headIndex] > LCD_HORIZONTAL_MAX - 2)
+                        segmentsX[headIndex] > DISPLAY_WIDTH - 2)
                     {
                         alive = false;
                         continue;
@@ -227,8 +226,8 @@ bool game2()
                             {
                                 valid = true;
                                 //Generate new apple
-                                appleX = rand() % (LCD_HORIZONTAL_MAX - 4) + 2;
-                                appleY = rand() % (LCD_HORIZONTAL_MAX - 4) + 2;
+                                appleX = rand() % (DISPLAY_WIDTH - 4) + 2;
+                                appleY = rand() % (DISPLAY_HEIGHT - 4) + 2;
                                 appleRect = getRectangle(appleX, appleY);
                                 int i;
                                 for (i = 0; i < snakeLength; i++)
@@ -243,8 +242,8 @@ bool game2()
                                 }
                             } while (!valid);
                         }
-                        Graphics_setForegroundColor(ctxPtr, GRAPHICS_COLOR_RED);
-                        Graphics_fillRectangle(ctxPtr, &appleRect);
+                        setForegroundColor(GRAPHICS_COLOR_RED);
+                        fillRectangle(&appleRect);
                     }
                     Graphics_Rectangle headRect = getRectangle(
                         segmentsX[headIndex],
@@ -252,14 +251,12 @@ bool game2()
                     if (isOverlapping(&appleRect, &headRect))
                     { //Eat apple
                         appleX = -1;
-                        ctxPtr->foreground = ctxPtr->background;
+                        setForegroundColorTranslated(getBackgroundColor());
                         //Delete apple
-                        Graphics_fillRectangle(ctxPtr, &appleRect);
+                        fillRectangle(&appleRect);
                         //Redraw head
-                        ctxPtr->foreground = previousFg;
-                        Graphics_fillRectangle(ctxPtr, &headRect);
-
-                        ctxPtr->foreground = previousFg;
+                        setForegroundColorTranslated(previousFg);
+                        fillRectangle(&headRect);
                         snakeLength++;
                         if (snakeLength == maxSnakeLength)
                         {
@@ -285,7 +282,7 @@ bool game2()
                         }
                     }
                 }
-                ctxPtr->foreground = previousFg;
+                setForegroundColorTranslated(previousFg);
                 justResumed = false;
             }
         }
@@ -295,14 +292,14 @@ bool game2()
     return alive;
 }
 
-int chooseMaxLength()
+inline int chooseMaxLength()
 {
     Graphics_Context *ctx = &gameState.gContext;
     Graphics_clearDisplay(ctx);
     Graphics_drawStringCentered(ctx,
                                 (int8_t *)"Choose max score",
                                 AUTO_STRING_LENGTH,
-                                LCD_HORIZONTAL_MAX / 2,
+                                DISPLAY_WIDTH / 2,
                                 10,
                                 true);
     int options[OPT_LEN];
@@ -311,20 +308,19 @@ int chooseMaxLength()
     {
         options[i] = 10 * (i + 1);
     }
-    assert(options[OPT_LEN - 1] <= MAXL);
     int selected = 0;
     Graphics_Rectangle r;
     r.xMin = 0;
-    r.xMax = LCD_HORIZONTAL_MAX;
+    r.xMax = DISPLAY_WIDTH;
     r.yMin = 40;
     r.yMax = 60;
     uint32_t previousFg = ctx->foreground;
     int j = 0;
     bool shouldRedraw = true;
-    while (!gameState.topButtonClicked)
+    while (!gameState.buttonClicked)
     {
         j++;
-        ADC14->CTL0 |= ADC14_CTL0_SC;
+        readJoystickPosition();
         if (j == 10 || shouldRedraw)
         {
             j = 0;
@@ -349,7 +345,7 @@ int chooseMaxLength()
             if (shouldRedraw)
             {
                 ctx->foreground = ctx->background;
-                Graphics_fillRectangle(ctx, &r);
+                fillRectangle(&r);
                 ctx->foreground = previousFg;
                 char string[4];
                 sprintf(string, "%3d", options[selected]);
@@ -358,7 +354,7 @@ int chooseMaxLength()
                     ctx,
                     (int8_t *)string,
                     AUTO_STRING_LENGTH,
-                    LCD_HORIZONTAL_MAX / 2,
+                    DISPLAY_WIDTH / 2,
                     50,
                     false);
             }
@@ -367,6 +363,6 @@ int chooseMaxLength()
         for (i = 0; i < 40000; i++)
             ;
     }
-    gameState.topButtonClicked = false;
+    gameState.buttonClicked = false;
     return options[selected];
 }

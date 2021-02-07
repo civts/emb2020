@@ -1,15 +1,15 @@
 #include "game1.h"
 #include "game2.h"
-#include "hwInit.h"
 #include "gameState.h"
-#include "menu.h"
 #include "gameEndScreen.h"
+#include "menu.h"
+#include "hw_dependent/hwInit.h"
 
 int main(void)
 {
-  gameState.topButtonClicked = false;
-  gameState.joystickX = 8000;
-  gameState.joystickY = 8000;
+  gameState.buttonClicked = false;
+  gameState.joystickX = J_H_INITIAL;
+  gameState.joystickY = J_V_INITIAL;
   gameState.brightness = AUTO;
 
   //Init hardware and graphics

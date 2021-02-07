@@ -11,7 +11,7 @@ enum direction_t
 };
 
 //Let player choose maximum snake length
-int chooseMaxLength();
+inline int chooseMaxLength();
 
 //Play game 2.
 //Returns true if won, false if lost

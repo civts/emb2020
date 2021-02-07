@@ -1,34 +1,33 @@
 #include "gameState.h"
-#include "ti/devices/msp432p4xx/inc/msp432p401r.h"
 #include "menu.h"
-#include "../LightSensor/HAL_OPT3001.h"
 #include <stdio.h>
+#include "hw_dependent/display.h"
+#include "hw_dependent/joystick.h"
+#include "hw_dependent/light_sensor.h"
 
 //Vertical offset for the options
 const int optionsOffset = 60;
 
-const char *const options[] = {"Game 1", "Snake"};
+const char *const options[] = {"Demo 1", "Snake"};
 const int optionsLength = 2;
 
 void showMenu()
 {
-    Graphics_Context *context = &gameState.gContext;
-    Graphics_clearDisplay(context);
+    clearDisplay();
     int currentlySelected = 0;
-    int stepBetweenOptions = context->font->height * 2;
+    int stepBetweenOptions = getFontHeight() * 2;
 
     int previouslySelected = currentlySelected;
-    gameState.topButtonClicked = false;
+    gameState.buttonClicked = false;
     bool previouslyDark = false;
     Graphics_Rectangle previousRect;
     previousRect.xMin = 0;
     previousRect.xMax = 0;
     previousRect.yMin = 0;
     previousRect.yMax = 0;
-    while ((!gameState.topButtonClicked) || currentlySelected >= optionsLength)
+    while ((!gameState.buttonClicked) || currentlySelected >= optionsLength)
     {
-        //Trigger ADC to read joystick position
-        ADC14->CTL0 |= ADC14_CTL0_SC;
+        readJoystickPosition();
 
         adjustBrightness(&previouslyDark);
 
@@ -63,52 +62,46 @@ void showMenu()
 
         _drawLightDarkSwitch();
 
-        if (gameState.topButtonClicked)
+        if (gameState.buttonClicked)
         {
             if (currentlySelected == optionsLength)
             {
                 gameState.brightness++;
                 gameState.brightness %= 3;
-                gameState.topButtonClicked = false;
+                gameState.buttonClicked = false;
             }
         }
     }
-    gameState.topButtonClicked = false;
+    gameState.buttonClicked = false;
     gameState.selectedGame = currentlySelected;
 }
 
 void _drawTitle()
 {
-    Graphics_Context *ctx = &gameState.gContext;
-    uint32_t previousColor = ctx->foreground;
-    Graphics_setForegroundColor(ctx, GRAPHICS_COLOR_GREEN);
-    int width = ctx->display->width;
+    uint32_t previousColor = getForegroundColor();
+    setForegroundColor(GRAPHICS_COLOR_GREEN);
+    int width = DISPLAY_WIDTH;
 
-    const Graphics_Font *previousFont = ctx->font;
-    GrContextFontSet(ctx, &g_sFontCm16b);
-    Graphics_drawStringCentered(
-        ctx,
-        (int8_t *)"MSP Games",
-        AUTO_STRING_LENGTH,
+    const Graphics_Font *previousFont = getFont();
+    setFont(titleFont);
+    drawStringCentered(
+        "MSP Games",
         width / 2,
         22,
         false);
-    GrContextFontSet(ctx, previousFont);
-    ctx->foreground = previousColor;
+    setFont(previousFont);
+    setForegroundColorTranslated(previousColor);
 }
 
 void _drawOptions(int step)
 {
-    Graphics_Context *ctx = &gameState.gContext;
-    int halfWidth = ctx->display->width / 2;
+    int halfWidth = DISPLAY_WIDTH / 2;
     int yOffset = optionsOffset;
     int i;
     for (i = 0; i < optionsLength; i++)
     {
-        Graphics_drawStringCentered(
-            ctx,
-            (int8_t *)options[i],
-            AUTO_STRING_LENGTH,
+        drawStringCentered(
+            options[i],
             halfWidth,
             yOffset,
             false);
@@ -118,36 +111,34 @@ void _drawOptions(int step)
 
 Graphics_Rectangle _drawSelectionRectangle(const int selected, const int step)
 {
-    Graphics_Context *context = &gameState.gContext;
     const int pad = 20;
     Graphics_Rectangle rectangle;
     rectangle.xMin = pad;
-    rectangle.xMax = context->display->width - pad;
+    rectangle.xMax = DISPLAY_WIDTH - pad;
     rectangle.yMin = optionsOffset + selected * step - step / 2;
     rectangle.yMax = optionsOffset + selected * step + step / 2;
 
     if (selected == optionsLength)
     {
-        rectangle.xMin = context->display->width - 20;
-        rectangle.xMax = context->display->width - 1;
-        rectangle.yMin = context->display->heigth - 15;
-        rectangle.yMax = context->display->heigth - 2;
+        rectangle.xMin = DISPLAY_WIDTH - 20;
+        rectangle.xMax = DISPLAY_WIDTH - 1;
+        rectangle.yMin = DISPLAY_HEIGHT - 15;
+        rectangle.yMax = DISPLAY_HEIGHT - 2;
     }
-    Graphics_drawRectangle(context, &rectangle);
+    drawRectangle(&rectangle);
     return rectangle;
 }
 
 void _cleanRectangle(const Graphics_Rectangle *rect)
 {
-    uint32_t fgColor = gameState.gContext.foreground;
-    gameState.gContext.foreground = gameState.gContext.background;
-    Graphics_drawRectangle(&gameState.gContext, rect);
-    gameState.gContext.foreground = fgColor;
+    uint32_t fgColor = getForegroundColor();
+    setForegroundColorTranslated(getBackgroundColor());
+    drawRectangle(rect);
+    setForegroundColorTranslated(fgColor);
 }
 
 void _drawLightDarkSwitch()
 {
-    Graphics_Context *context = &gameState.gContext;
     char str[2];
     str[1] = '\0';
     switch (gameState.brightness)
@@ -162,23 +153,21 @@ void _drawLightDarkSwitch()
         str[0] = 'A';
         break;
     }
-    Graphics_drawString(context,
-                        (int8_t *)str,
-                        AUTO_STRING_LENGTH,
-                        context->display->width - 12,
-                        context->display->heigth - context->font->height - 3,
-                        true);
+    drawString(
+        str,
+        DISPLAY_WIDTH - 12,
+        DISPLAY_HEIGHT - getFontHeight() - 3,
+        true);
 }
 
 void adjustBrightness(bool *previouslyDark)
 {
-    Graphics_Context *context = &gameState.gContext;
     bool useDark = previouslyDark;
     switch (gameState.brightness)
     {
     case AUTO:
     { //Get luminosity
-        unsigned long int lux = OPT3001_getLux();
+        unsigned long int lux = getLux();
 
         if (lux > 20)
         {
@@ -204,20 +193,20 @@ void adjustBrightness(bool *previouslyDark)
     {
         if (!(*previouslyDark))
         {
-            Graphics_setBackgroundColor(context, 0x00232323);
-            Graphics_setForegroundColor(context, GRAPHICS_COLOR_ANTIQUE_WHITE);
+            setBackgroundColor(0x00232323);
+            setForegroundColor(GRAPHICS_COLOR_ANTIQUE_WHITE);
             *previouslyDark = true;
-            Graphics_clearDisplay(context);
+            clearDisplay();
         }
     }
     else
     {
         if (*previouslyDark)
         {
-            Graphics_setBackgroundColor(context, GRAPHICS_COLOR_WHITE);
-            Graphics_setForegroundColor(context, GRAPHICS_COLOR_BLACK);
+            setBackgroundColor(GRAPHICS_COLOR_WHITE);
+            setForegroundColor(GRAPHICS_COLOR_BLACK);
             *previouslyDark = false;
-            Graphics_clearDisplay(context);
+            clearDisplay();
         }
     }
 }

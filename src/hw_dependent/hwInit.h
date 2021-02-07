@@ -11,5 +11,5 @@ void _lightSensorInit();
 
 void _initButton();
 
-void configure_ADC();
+void _configure_ADC();
 #endif

@@ -1,11 +1,11 @@
-#include "../LcdDriver/Crystalfontz128x128_ST7735.h"
-#include "../LightSensor/HAL_OPT3001.h"
-#include "../LightSensor/HAL_I2C.h"
+#include "../../LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "../../LightSensor/HAL_OPT3001.h"
+#include "../../LightSensor/HAL_I2C.h"
 #include <ti/devices/msp432p4xx/inc/msp432p401r.h>
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <ti/devices/msp432p4xx/driverlib/flash.h>
 #include <ti/grlib/grlib.h>
-#include "gameState.h"
+#include "../gameState.h"
 #include "hwInit.h"
 #include "buzzer.h"
 
@@ -13,7 +13,7 @@ void hwInit()
 {
     // Halting WDT
     WDT_A_holdTimer();
-    configure_ADC();
+    _configure_ADC();
     // Disable master interrupts
     Interrupt_disableMaster();
 
@@ -83,7 +83,7 @@ void _initButton(void)
     NVIC_EnableIRQ(PORT5_IRQn);
 }
 
-void configure_ADC()
+void _configure_ADC()
 {
     /*enable ports*/
 
@@ -159,7 +159,7 @@ void PORT5_IRQHandler(void)
             ;
         if (!(P5->IN & BIT1))
         {
-            gameState.topButtonClicked = true;
+            gameState.buttonClicked = true;
         }
         P5->IFG &= ~BIT1;
     }
