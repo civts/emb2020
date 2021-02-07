@@ -20,7 +20,6 @@ bool game1()
     int playerY = DISPLAY_HEIGHT - 2;
 
     int i = 0;
-    Graphics_Context *ctxPtr = &gameState.gContext;
     bool justResumed = true;
 
     Graphics_Rectangle targetRect;
@@ -200,7 +199,7 @@ bool game1()
                     playerRect.xMax = playerX + 4;
                     playerRect.yMin = playerY - 4;
                     playerRect.yMax = playerY + 4;
-                    if (Graphics_isPointWithinRectangle(&playerRect, enemyX[i], enemyY[i]))
+                    if (isPointWithinRectangle(&playerRect, enemyX[i], enemyY[i]))
                     {
                         alive = false;
                     };

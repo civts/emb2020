@@ -8,7 +8,7 @@
 //Vertical offset for the options
 const int optionsOffset = 60;
 
-const char *const options[] = {"Demo 1", "Snake"};
+const char *const options[] = {"Game 1", "Snake"};
 const int optionsLength = 2;
 
 void showMenu()

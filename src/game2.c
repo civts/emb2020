@@ -276,7 +276,7 @@ bool game2()
                     {
                         int x = segmentsX[(tailIndex + i) % MAXL];
                         int y = segmentsY[(tailIndex + i) % MAXL];
-                        if (Graphics_isPointWithinRectangle(&headRect, x, y))
+                        if (isPointWithinRectangle(&headRect, x, y))
                         {
                             alive = false;
                         }
@@ -294,14 +294,12 @@ bool game2()
 
 inline int chooseMaxLength()
 {
-    Graphics_Context *ctx = &gameState.gContext;
-    Graphics_clearDisplay(ctx);
-    Graphics_drawStringCentered(ctx,
-                                (int8_t *)"Choose max score",
-                                AUTO_STRING_LENGTH,
-                                DISPLAY_WIDTH / 2,
-                                10,
-                                true);
+    clearDisplay();
+    drawStringCentered(
+        "Choose max score",
+        DISPLAY_WIDTH / 2,
+        10,
+        true);
     int options[OPT_LEN];
     int i;
     for (i = 0; i < OPT_LEN; i++)
@@ -314,7 +312,7 @@ inline int chooseMaxLength()
     r.xMax = DISPLAY_WIDTH;
     r.yMin = 40;
     r.yMax = 60;
-    uint32_t previousFg = ctx->foreground;
+    uint32_t previousFg = getForegroundColor();
     int j = 0;
     bool shouldRedraw = true;
     while (!gameState.buttonClicked)
@@ -344,16 +342,14 @@ inline int chooseMaxLength()
 
             if (shouldRedraw)
             {
-                ctx->foreground = ctx->background;
+                setForegroundColorTranslated(getBackgroundColor());
                 fillRectangle(&r);
-                ctx->foreground = previousFg;
+                setForegroundColorTranslated(previousFg);
                 char string[4];
                 sprintf(string, "%3d", options[selected]);
 
-                Graphics_drawStringCentered(
-                    ctx,
+                drawStringCentered(
                     (int8_t *)string,
-                    AUTO_STRING_LENGTH,
                     DISPLAY_WIDTH / 2,
                     50,
                     false);

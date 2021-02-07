@@ -116,3 +116,8 @@ bool isOverlapping(const Graphics_Rectangle *rect1, const Graphics_Rectangle *re
     }
     return false;
 }
+
+bool isPointWithinRectangle(const Graphics_Rectangle *rect, uint16_t x, uint16_t y)
+{
+    return Graphics_isPointWithinRectangle(rect, x, y);
+}

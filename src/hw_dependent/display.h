@@ -61,4 +61,7 @@ void drawStringCentered(const char *string, uint32_t x, uint32_t y, bool redrawB
 //Detects if two rectangles overlap each other
 bool isOverlapping(const Graphics_Rectangle *rect1, const Graphics_Rectangle *rect2);
 
+//Detects if point is inside the rectangle
+bool isPointWithinRectangle(const Graphics_Rectangle *rect, uint16_t x, uint16_t y);
+
 #endif
